@@ -33,7 +33,7 @@ public class Player : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void MoveRPC(Vector2 input)
     {
-        Vector3 movement = new Vector3(0f, input.y, 0f) * player_speed * Time.deltaTime;
+        Vector3 movement = new Vector3(0f, input.y, 0f) * player_speed * Time.fixedDeltaTime;
 
         player_rb.MovePosition(player_rb.position + movement);
     }
