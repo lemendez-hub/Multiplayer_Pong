@@ -26,7 +26,7 @@ public class Player : NetworkBehaviour
         {
             return;
         }
-        
+
         MoveRPC(player_input);
     }
 
@@ -46,7 +46,7 @@ public class Player : NetworkBehaviour
         }
 
         input_system_actions.Enable();
-        
+
         input_system_actions.Player.Move.performed += OnMove;
         input_system_actions.Player.Move.canceled += OnMove;
     }
@@ -59,8 +59,8 @@ public class Player : NetworkBehaviour
         }
 
         input_system_actions.Player.Move.performed -= OnMove;
-        input_system_actions.Player.Move.canceled -= OnMove;
 
+        input_system_actions.Player.Move.canceled -= OnMove;
         input_system_actions.Disable();
     }
 

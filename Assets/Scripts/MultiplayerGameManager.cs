@@ -30,10 +30,6 @@ public class MultiplayerGameManager : MonoBehaviour
             host_button.gameObject.SetActive(false);
             client_button.gameObject.SetActive(false);
         }
-        else
-        {
-            return;
-        }
     }
 
     private void OnDestroy()
