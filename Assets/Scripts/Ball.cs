@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class Ball : NetworkBehaviour
 {
+    private bool ball_launched = false;
+    
     [Header("Ball Properties")]
     [SerializeField] private float ball_speed = 15f;
     
@@ -12,40 +14,64 @@ public class Ball : NetworkBehaviour
     
     private Vector3 ball_direction;
     
-    public override void OnNetworkSpawn()
+    private void Start()
     {
-        if(!IsServer)
-        {
-            return;
-        }
-
         initial_speed = ball_speed;
-
-        LaunchBall(Random.value > 0.5f ? 1 : -1);
     }
-
+    
     private void FixedUpdate()
     {
         if(!IsServer)
         {
             return;
         }
+        
+        if(!MultiplayerGameManager.instance.MatchStarted)
+        {
+            return;
+        }
 
+        if(MultiplayerGameManager.instance.MatchEnd)
+        {
+            return;
+        }
+        
+        if(!ball_launched)
+        {
+            LaunchBall(Random.value > 0.5f ? 1 : -1);
+            
+            ball_launched = true;
+        }
+        
         transform.position += ball_direction * ball_speed * Time.fixedDeltaTime;
     }
-
+    
     private void LaunchBall(int direction)
     {
         ball_direction = new Vector3(direction, 0f, 0f).normalized;
     }
-
+    
+    private void ResetBall(int direction)
+    {
+        if(!IsServer)
+        {
+            return;
+        }
+        
+        transform.position = Vector3.zero;
+        
+        ball_speed = initial_speed;
+        
+        LaunchBall(direction);
+    }
+    
     private void OnTriggerEnter(Collider other)
     {
         if(!IsServer)
         {
             return;
         }
-
+        
         if(other.CompareTag("Player"))
         {
             float hit = (transform.position.y - other.bounds.center.y) / other.bounds.extents.y;
@@ -63,13 +89,28 @@ public class Ball : NetworkBehaviour
             }
             
             ball_direction = new Vector3(x_direction, hit * 1.5f, 0f).normalized;
-
+            
             ball_speed = Mathf.Min(ball_speed + increase, max_speed);
         }
         
         if(other.CompareTag("Wall"))
         {
-            ball_direction *= -1f;
+            ball_direction.y *= -1f;
+            
+            if(other.transform.position.x < 0)
+            {
+                ResetBall(1);
+                
+                MultiplayerGameManager.instance.UpdateClientScore();
+            }
+            else if(other.transform.position.x > 0)
+            {
+                ResetBall(-1);
+                
+                MultiplayerGameManager.instance.UpdateHostScore();
+            }
+
+            ball_speed = Mathf.Min(ball_speed + increase, max_speed);
         }
     }
 }
